@@ -7,7 +7,7 @@ Coffee Exchange is a decentralized peer-to-peer swap market for coffee commodity
 ## Live Frontend
 
 **Deployed Frontend:**  
-https://coffee-exchange-six.vercel.app/
+https://coffee-exchange-ochre.vercel.app/
 
 ---
 
