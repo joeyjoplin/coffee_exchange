@@ -1,95 +1,186 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/TzDKD5h9)
-![School of Solana](https://github.com/Ackee-Blockchain/school-of-solana/blob/master/.banner/banner.png?raw=true)
+# Coffee Exchange — A Solana-based P2P Coffee Commodities Escrow
 
-## 📚Solana Program
-We are about halfway through the course, and you already have some experience with programming on Solana. It is time to create something on your own! You will be building a dApp that will serve as the culmination of everything you have learned so far. Feel free to implement whatever comes to your mind, (as long as it passes the requirements).
+Coffee Exchange is a decentralized peer-to-peer swap market for coffee commodity tokens built entirely on **Solana**, featuring on-chain escrow vaults using PDAs, Maker/Taker settlement flows, SPL token minting directly from the UI, and a fully trustless exchange mechanism. This project includes a complete frontend, Solana program, and Anchor test suite.
 
-**This does not mean that the School of Solana is coming to an end just yet!** There are still several exciting lectures ahead, as well as one security related task.
+---
 
-### Task details
-This task consists of two parts:
-1. **Core of your dApp**
-    - A deployed Solana program.
-2. **Frontend**
-    - A simple frontend to interact with the dApp.
+## Live Frontend
 
-### Requirements
-- An Anchor program deployed on **Devnet** or **Mainnet**.
-- The Anchor program must use a PDA (Program Derived Address).
-- At least one TypeScript **test** for each Anchor program instruction. These tests should cover both **happy** and **unhappy** (intentional error-triggering) scenarios.
-- A simple **frontend** deployed using your preferred provider (for more info, check below).
-- A filled out **PROJECT_DESCRIPTION.md** file.
+**Deployed Frontend:**  
+https://coffee-exchange-six.vercel.app/
 
-### Ideas
-We highly recommend starting with something simple. Take time to think through your project and work on it in iterations. Do not try to implement everything at once!
+---
 
-Below is a list of few ideas to get you started:
-- **Social app**
-    - Instagram
-    - Giphy
-    - Friendtech
-    - Spotify
-- **Blog**
-- **Voting** ([D21 - Janeček method](https://www.ih21.org/en/guidelines))
-- **DeFi**
-    - Raffles
-    - Escrow
-    - Tipping
-    - Lending ([Save Documentation](https://docs.save.finance/))
-    - Liquid Staking ([Marinade Documentation](https://docs.marinade.finance/))
-    - Data Query with Pyth ([Pyth Documentation](https://docs.pyth.network/price-feeds))
-    - AMM ([Raydium Documentation](https://raydium.gitbook.io/raydium/))
-- **Gaming**
-    - Browser Game ([Gaming on Solana](https://solanacookbook.com/gaming/nfts-in-games.html#nfts-in-games))
+## Program ID
 
-### Deadline
-The deadline for this task is **Wednesday, November 19th, at 23:59 UTC**.
->[!CAUTION]
->Note that we will not accept submissions after the deadline.
+9VdKGKXs5ZJd6Cr9GtJcPP8fdUSmRgvkYScvhi1oPkFc
 
-### Submission
-There are two folders, one for the Anchor project, and one for the frontend. Push your changes to the **main** branch of **this** repository.
+---
 
->[!IMPORTANT]
->It is essential that you fill out the `PROJECT_DESCRIPTION.md` template completely and accurately. This document will be used by AI for the initial evaluation, so provide detailed information about your project, including working links, clear descriptions, and technical implementation details.
+## Overview
 
->[!NOTE]
->Your submission repository is public. Feel free to share the link to showcase your work!
+### What the dApp Does
 
-### Evaluation
-The evaluation process is based on the **requirements**. If you meet the requirements, you pass the task!
+Coffee Exchange allows users to mint two SPL tokens representing coffee types:
 
->[!NOTE]
->The first round of evaluations will be conducted by AI to verify requirements before manual review. AI can make mistakes. If you believe you fulfilled all requirements but weren't graded correctly, please create a support ticket and we will resolve the issue.
+- ☕ **Arabica (Token A)**
+- 🌋 **Robusta (Token B)**
 
->[!CAUTION]
->We expect original work that demonstrates your understanding and creativity. While you may draw inspiration from examples covered in lessons and tasks, **direct copying is not acceptable**. If you choose to build upon an example from the School of Solana materials, you must significantly expand it with additional features, instructions, and functionality to showcase your learning progress. 
+Users can:
 
-### Example Workflow
-Let's say you are going to implement the Twitter dApp as the Solana Program. Here's how the steps could look:
+- Create on-chain offers that lock Arabica inside a PDA-controlled vault.
+- Have a simulated Taker accept the offer by sending Robusta and receiving Arabica.
+- Execute swaps fully trustlessly through an Anchor smart contract.
+- Mint SPL tokens directly in the browser using the connected wallet as mint authority.
+- Interact with deterministic ATA and PDA accounts for secure settlement.
 
-**1.** Implement Twitter dApp using the Anchor framework.
+This dApp demonstrates a real commodity trading mechanism powered entirely by Solana’s high-performance runtime.
 
-**2.** Test the Twitter dApp using the Anchor framework.
+---
 
-**3.** Deploy the Twitter dApp on the Solana Devnet.
+##  Architecture
 
-**4.** Using the create solana dapp template, implement frontend for the Twitter dApp.
+The architecture follows a trustless Maker ↔ PDA ↔ Taker flow:
 
-**5.** Publish Frontend using [Vercel](https://vercel.com). Ensure the deployment is publicly accessible.
+Maker Wallet <----> Program PDA Vault <----> Taker Wallet
 
-**6.** Fill out the PROJECT_DESCRIPTION.md template.
+### SPL Token Mints
 
-**7.** Submit the Twitter dApp using GitHub Classroom.
+Created directly from the frontend during the first **Harvest**, using:
 
-### Useful Links
-- [Vercel](https://vercel.com)
-- [Create Solana Dapp](https://github.com/solana-foundation/create-solana-dapp)
-- [Account Macro Constraints](https://docs.rs/anchor-lang/0.31.1/anchor_lang/derive.Accounts.html)
-- [Solana Developers Courses](https://solana.com/developers/courses)
+- 0 decimal SPL mints
+- Maker wallet as mint + freeze authority
 
------
+### PDA-based Vault
 
-### Need help?
->[!TIP]
->If you have any questions, feel free to reach out to us on [Discord](https://discord.gg/z3JVuZyFnp).
+Each offer creates a deterministic PDA:
+
+seeds = ["offer", maker_pubkey, id_le_bytes]
+
+This PDA:
+
+- Stores offer metadata  
+- Owns the vault ATA  
+- Signs withdrawals during settlement  
+- Ensures no one can tamper with locked tokens  
+
+### Instructions
+
+#### **1. make_offer**
+
+- Creates an on-chain offer account  
+- Derives vault PDA  
+- Creates vault ATA owned by PDA  
+- Transfers Arabica from Maker → vault  
+- Stores offer metadata (maker, wanted amount, mints, bump)
+
+#### **2. take_offer**
+
+- Taker sends Robusta → Maker  
+- PDA releases Arabica → Taker  
+- PDA closes vault ATA and sends rent back to Maker  
+- Offer account is closed automatically  
+
+---
+
+## Folder Structure
+
+/anchor_project</br>
+  /programs/coffee_exchange</br>
+  /tests</br>
+Anchor.toml</br></br>
+
+/frontend</br>
+  /src/App.tsx</br>
+  /src/components</br>
+
+---
+
+## 🛠️ Setup & Installation
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/School-of-Solana/program-joeyjoplin.git
+```
+ 
+### 2. Build and test Smart Contract (Anchor)
+```bash
+1. Build the Solana program
+
+cd anchor_project
+anchor build
+
+2. Run Anchor tests on localnet
+Ensure Anchor.toml provider is:
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+3. Run test
+anchor test
+```
+
+### 3. Run Frontend
+```bash
+1. Install dependencies
+
+cd frontend
+npm install
+
+2. Create .env
+
+VITE_RPC_ENDPOINT=https://api.devnet.solana.com
+VITE_COFFEE_EXCHANGE_PROGRAM_ID=9VdKGKXs5ZJd6Cr9GtJcPP8fdUSmRgvkYScvhi1oPkFc
+
+3. Run frontend
+
+npm run dev
+
+4. Open in browser
+
+http://localhost:5173
+```
+
+## Using the dApp
+1. Connect Wallet
+  - Click the wallet button to connect Phantom (Maker).
+
+2. Harvest Coffee Beans
+  - Creates Arabica + Robusta SPL mints (first time)
+  - Mints 100 tokens of each type to Maker
+
+3. Create an Offer (Maker)
+Input:
+  - Amount of Arabica to offer
+  - Amount of Robusta requested
+
+The program:
+  - Derives PDA
+  - Creates vault
+  - Locks Arabica inside the vault
+
+4. Take Offer (Taker)
+- Simulated Keypair mints/holds Robusta
+- Sends Robusta → Maker
+- Receives Arabica from PDA vault
+- Vault and offer are closed
+
+## Security Model
+- PDA exclusively controls escrow vault
+- TransferChecked prevents tampered mint/decimal changes
+- Deterministic PDAs and ATAs prevent spoofing
+- Maker cannot take own offer
+- No trust needed between participants
+- Vault always closes → no stranded funds
+
+## Roadmap
+- Add cancel offer instruction
+- Add real Taker wallet support
+- Add offer listing page
+- Multi-offer orderbook
+
+### Author
+Daniele Rodrigues dos Santos
+Solana Developer & Web3 Builder
