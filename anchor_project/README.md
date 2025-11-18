@@ -15,9 +15,6 @@ _Add your deployed URL here_
 
 9VdKGKXs5ZJd6Cr9GtJcPP8fdUSmRgvkYScvhi1oPkFc
 
-yaml
-Copiar código
-
 ---
 
 ## 📘 Overview
@@ -47,9 +44,6 @@ The architecture follows a trustless Maker ↔ PDA ↔ Taker flow:
 
 Maker Wallet <----> Program PDA Vault <----> Taker Wallet
 
-csharp
-Copiar código
-
 ### ✔ SPL Token Mints
 
 Created directly from the frontend during the first **Harvest**, using:
@@ -62,9 +56,6 @@ Created directly from the frontend during the first **Harvest**, using:
 Each offer creates a deterministic PDA:
 
 seeds = ["offer", maker_pubkey, id_le_bytes]
-
-yaml
-Copiar código
 
 This PDA:
 
@@ -118,57 +109,37 @@ cd coffee-exchange
 🖥️ Frontend
 2. Install dependencies
 bash
-Copiar código
 cd frontend
 npm install
 3. Create .env
 env
-Copiar código
+
 VITE_RPC_ENDPOINT=https://api.devnet.solana.com
 VITE_COFFEE_EXCHANGE_PROGRAM_ID=9VdKGKXs5ZJd6Cr9GtJcPP8fdUSmRgvkYScvhi1oPkFc
+
 4. Run frontend
 bash
-Copiar código
 npm run dev
 Open in browser:
 
-arduino
-Copiar código
 http://localhost:5173
+
 🔧 Smart Contract (Anchor)
 5. Build the Solana program
 bash
-Copiar código
+
 cd anchor_project
 anchor build
 6. Run Anchor tests on localnet
 Ensure Anchor.toml provider is:
 
 toml
-Copiar código
+
 cluster = "localnet"
 Then:
-
 bash
-Copiar código
-anchor test
-🧪 Testing
-✔ Happy Path
-Offer creation
-Vault ATA creation
-Arabica deposit
-Robusta → Maker transfer
-PDA → Taker Arabica release
-Vault closing and rent cleanup
-Offer account cleanup
 
-✔ Unhappy Path
-Wrong PDA
-Wrong mint pair
-Missing ATA
-Unauthorized signer
-Attempting to reuse a consumed offer
-Offer not found
+anchor test
 
 🖥️ Using the dApp
 1. Connect Wallet
